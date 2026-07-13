@@ -5,7 +5,7 @@ import fs from 'node:fs';
 export const apiRouter = express.Router();
 
 // --- IN-MEMORY & FILE FALLBACK DATABASE ---
-const DB_FILE = join(process.cwd(), 'tmp_asn_db.json');
+const DB_FILE = join(process.env['VERCEL'] ? '/tmp' : process.cwd(), 'tmp_asn_db.json');
 
 interface DbState {
   pengaturan: {

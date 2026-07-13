@@ -20,6 +20,11 @@ export class App implements OnInit {
   cuti = inject(CutiService);
   private fb = inject(FormBuilder);
 
+  // Database Diagnostic Signals
+  dbDiagnosticResult = signal<any>(null);
+  checkingDb = signal<boolean>(false);
+  showDiagnosticModal = signal<boolean>(false);
+
   // UI State
   sidebarOpen = signal(false);
   pegawaiPage = signal(1);
@@ -384,6 +389,29 @@ export class App implements OnInit {
       this.cuti.showToast(`Selamat datang, ${u.nama} (${u.role})`);
     } else {
       this.cuti.showToast('Username atau password salah!', 'error');
+    }
+  }
+
+  async runDbDiagnostics() {
+    this.checkingDb.set(true);
+    this.showDiagnosticModal.set(true);
+    this.dbDiagnosticResult.set(null);
+    try {
+      const res = await fetch('/api/db-status');
+      if (res.ok) {
+        const data = await res.json();
+        this.dbDiagnosticResult.set(data);
+      } else {
+        this.dbDiagnosticResult.set({
+          error: `HTTP error ${res.status}`
+        });
+      }
+    } catch (err: any) {
+      this.dbDiagnosticResult.set({
+        error: err?.message || String(err)
+      });
+    } finally {
+      this.checkingDb.set(false);
     }
   }
 

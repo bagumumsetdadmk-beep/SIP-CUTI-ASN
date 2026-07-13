@@ -43,9 +43,149 @@
             Masuk ke Aplikasi
           </button>
         </form>
+
+        <!-- Supabase Connection Diagnostic Trigger -->
+        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col items-center">
+          <button type="button" (click)="runDbDiagnostics()"
+                  class="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-blue-600 transition-all bg-slate-50 hover:bg-slate-100 px-4 py-2 rounded-xl border border-slate-200 shadow-sm w-full justify-center">
+            <mat-icon class="text-sm w-4 h-4 flex items-center justify-center">settings_ethernet</mat-icon>
+            Cek Koneksi Database Supabase
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- DIAGNOSTIC MODAL -->
+  @if (showDiagnosticModal()) {
+    <div class="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in font-sans">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+        
+        <!-- Modal Header -->
+        <div class="bg-slate-800 text-white px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <mat-icon class="text-blue-400">dns</mat-icon>
+            <div class="text-left">
+              <h3 class="font-bold text-base leading-tight">Diagnostik Database Supabase</h3>
+              <p class="text-[10px] text-slate-400">Memeriksa koneksi server-side ke REST API Supabase</p>
+            </div>
+          </div>
+          <button (click)="showDiagnosticModal.set(false)" class="text-slate-400 hover:text-white transition-all">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto space-y-4 text-slate-700 text-sm">
+          
+          @if (checkingDb()) {
+            <div class="flex flex-col items-center justify-center py-12 space-y-3">
+              <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <p class="text-slate-500 font-medium">Menghubungi Supabase REST API...</p>
+            </div>
+          } @else if (dbDiagnosticResult(); as status) {
+            
+            <!-- Konfigurasi Global -->
+            <div class="p-4 rounded-xl border flex flex-col gap-2 text-left"
+                 [ngClass]="status.configured ? 'bg-emerald-50/50 border-emerald-200' : 'bg-amber-50/50 border-amber-200'">
+              <div class="flex items-center gap-2 font-semibold"
+                   [ngClass]="status.configured ? 'text-emerald-800' : 'text-amber-800'">
+                <mat-icon>{{ status.configured ? 'check_circle' : 'warning' }}</mat-icon>
+                <span>{{ status.configured ? 'Konfigurasi Ditemukan' : 'Belum Dikonfigurasi' }}</span>
+              </div>
+              <div class="text-xs text-slate-600 space-y-1 mt-1 pl-7">
+                <div><strong class="text-slate-800 font-medium">SUPABASE_URL:</strong> {{ status.supabaseUrl || 'Tidak diatur' }}</div>
+                <div><strong class="text-slate-800 font-medium">SUPABASE_KEY snippet:</strong> {{ status.supabaseKeySnippet || 'Tidak diatur' }}</div>
+                <div><strong class="text-slate-800 font-medium">SUPABASE_KEY length:</strong> {{ status.supabaseKeyLength }} karakter</div>
+              </div>
+              @if (!status.configured) {
+                <div class="mt-2 text-xs text-amber-900 bg-amber-100/60 p-2.5 rounded-lg pl-7 border border-amber-200/50">
+                  <strong>Cara Konfigurasi:</strong> Silakan tambahkan Environment Variables <code>SUPABASE_URL</code> dan <code>SUPABASE_KEY</code> di dashboard Vercel Anda, lalu lakukan Redeploy.
+                </div>
+              }
+            </div>
+
+            <!-- General Error -->
+            @if (status.error) {
+              <div class="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex gap-2 text-left">
+                <mat-icon class="text-rose-600">error</mat-icon>
+                <div>
+                  <strong class="font-semibold block">Gagal Melakukan Diagnostik:</strong>
+                  <p class="text-xs mt-1 font-mono bg-white/60 p-2 rounded border border-rose-100">{{ status.error }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Status Tabel -->
+            @if (status.configured) {
+              <div class="text-left">
+                <h4 class="font-bold text-slate-800 text-xs mb-2 pl-1">Status Sinkronisasi Tabel</h4>
+                <div class="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white">
+                  @for (t of status.tables; track t.name) {
+                    <div class="p-3 flex items-center justify-between text-xs hover:bg-slate-50/50 transition-all">
+                      <div class="space-y-0.5">
+                        <div class="flex items-center gap-1.5">
+                          <span class="font-semibold text-slate-800">{{ t.name }}</span>
+                          <span class="text-slate-400 text-[10px]">➜ "{{ t.exactTable }}"</span>
+                        </div>
+                        @if (t.error) {
+                          <div class="text-rose-600 font-mono text-[10px] mt-0.5 max-w-lg overflow-x-auto whitespace-pre-wrap leading-tight">
+                            Error: {{ t.error.message || t.error.details || t.error.hint || (t.error | json) }}
+                          </div>
+                        } @else {
+                          <div class="text-slate-500">Berhasil memuat {{ t.rows }} baris data</div>
+                        }
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px]"
+                              [ngClass]="t.status === 'OK' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'">
+                          {{ t.status }} ({{ t.code }})
+                        </span>
+                      </div>
+                    </div>
+                  }
+                </div>
+                
+                <!-- Petunjuk Perbaikan RLS & Schema -->
+                <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-950 space-y-2">
+                  <div class="flex items-center gap-1.5 font-bold text-blue-900">
+                    <mat-icon class="text-blue-700">help_outline</mat-icon>
+                    <span>Panduan & Solusi Diagnostik:</span>
+                  </div>
+                  <ul class="list-disc pl-5 space-y-1 mt-1 text-blue-900/90 leading-relaxed">
+                    <li><strong>Table mapping case-sensitivity:</strong> Sistem secara otomatis menerjemahkan tabel snake_case seperti <code>hari_libur</code> menjadi camelCase <code>hariLibur</code> agar sesuai dengan schema di Supabase.</li>
+                    <li><strong>Jika status OK tetapi baris data 0:</strong> Pastikan tabel tersebut tidak kosong di Supabase. Jika Anda menggunakan Vercel, serverless tidak menyimpan data lokal, sehingga semua data harus berasal dari Supabase.</li>
+                    <li><strong>Jika status FAILED/ERROR (401/403):</strong> Kunci API Supabase Anda salah atau hak akses tidak diizinkan. Cek kembali isi <code>SUPABASE_KEY</code> di Vercel Anda.</li>
+                    <li><strong>Jika status FAILED (404 - Relation not exist):</strong> Tabel tersebut tidak ditemukan di Supabase. Silakan jalankan script SQL di panel SQL Editor Supabase Anda untuk membuat seluruh tabel.</li>
+                  </ul>
+                </div>
+              </div>
+            }
+
+          } @else {
+            <div class="py-6 text-center text-slate-500">
+              Klik tombol Cek Koneksi untuk memulai diagnostik database.
+            </div>
+          }
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-slate-50 px-6 py-4 flex justify-end gap-2 border-t border-slate-100">
+          <button type="button" (click)="runDbDiagnostics()" [disabled]="checkingDb()"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow transition-all flex items-center gap-1.5 cursor-pointer">
+            <mat-icon class="text-sm">refresh</mat-icon> Refresh Diagnostik
+          </button>
+          <button type="button" (click)="showDiagnosticModal.set(false)"
+                  class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition-all cursor-pointer">
+            Tutup
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
 } @else {
   <!-- MAIN APPLICATION (Sleek Interface Theme) -->
   <div class="flex h-screen w-full bg-slate-50 font-sans text-slate-800 overflow-hidden relative print:hidden">

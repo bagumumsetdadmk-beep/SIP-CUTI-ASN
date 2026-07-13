@@ -177,14 +177,28 @@ function saveDb() {
   }
 }
 
+// Helper: Map snake_case table names to Supabase case-sensitive tables
+const TABLE_MAP: Record<string, string> = {
+  'users': 'users',
+  'pegawai': 'pegawai',
+  'hari_libur': 'hari_libur',
+  'atasan_pejabat': 'atasan_pejabat',
+  'jenis_cuti': 'jenis_cuti',
+  'sisa_cuti': 'sisa_cuti',
+  'pengajuan_cuti': 'pengajuan_cuti',
+  'pengaturan': 'pengaturan'
+};
+
 // Helper: Sync with Supabase REST if configured
 async function trySupabaseGet(table: string): Promise<any[] | null> {
   const url = db.pengaturan.supabaseUrl || process.env['SUPABASE_URL'];
   const key = db.pengaturan.supabaseKey || process.env['SUPABASE_KEY'];
   if (!url || !key) return null;
 
+  const exactTable = TABLE_MAP[table] || table;
+
   try {
-    const res = await fetch(`${url}/rest/v1/${table}?select=*`, {
+    const res = await fetch(`${url}/rest/v1/${exactTable}?select=*`, {
       headers: {
         apikey: key,
         Authorization: `Bearer ${key}`,
@@ -251,8 +265,10 @@ async function trySupabaseWrite(table: string, method: string, data: any, idPara
   const key = db.pengaturan.supabaseKey || process.env['SUPABASE_KEY'];
   if (!url || !key) return;
 
+  const exactTable = TABLE_MAP[table] || table;
+
   try {
-    let endpoint = `${url}/rest/v1/${table}`;
+    let endpoint = `${url}/rest/v1/${exactTable}`;
     if (idParam) endpoint += `?id=eq.${encodeURIComponent(idParam)}`;
 
     // Remove undefined values
@@ -571,6 +587,93 @@ app.post('/api/pengaturan', async (req, res) => {
   }
 
   res.json(db.pengaturan);
+});
+
+// --- DATABASE DIAGNOSTICS ---
+app.get('/api/db-status', async (req, res) => {
+  const url = db.pengaturan.supabaseUrl || process.env['SUPABASE_URL'] || '';
+  const key = db.pengaturan.supabaseKey || process.env['SUPABASE_KEY'] || '';
+
+  interface DiagnosticTableResult {
+    name: string;
+    exactTable: string;
+    status: string;
+    code: number;
+    rows: number;
+    error: unknown;
+  }
+
+  const status = {
+    configured: !!(url && key),
+    supabaseUrl: url ? (url.length > 20 ? `${url.substring(0, 15)}...${url.substring(url.length - 5)}` : url) : '',
+    supabaseKeySnippet: key ? (key.length > 15 ? `${key.substring(0, 8)}...${key.substring(key.length - 5)}` : 'terlalu pendek') : '',
+    supabaseKeyLength: key ? key.length : 0,
+    tables: [] as DiagnosticTableResult[]
+  };
+
+  if (status.configured) {
+    const testTables = [
+      { key: 'users', label: 'users' },
+      { key: 'pegawai', label: 'pegawai' },
+      { key: 'hari_libur', label: 'hari_libur' },
+      { key: 'atasan_pejabat', label: 'atasan_pejabat' },
+      { key: 'jenis_cuti', label: 'jenis_cuti' },
+      { key: 'sisa_cuti', label: 'sisa_cuti' },
+      { key: 'pengajuan_cuti', label: 'pengajuan_cuti' },
+      { key: 'pengaturan', label: 'pengaturan' }
+    ];
+
+    for (const item of testTables) {
+      const exactTable = TABLE_MAP[item.key] || item.key;
+      try {
+        const response = await fetch(`${url}/rest/v1/${exactTable}?select=*`, {
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (response.ok) {
+          const data = await response.json() as unknown;
+          status.tables.push({
+            name: item.key,
+            exactTable,
+            status: 'OK',
+            code: response.status,
+            rows: Array.isArray(data) ? data.length : typeof data === 'object' && data !== null ? 1 : 0,
+            error: null
+          });
+        } else {
+          const errText = await response.text();
+          let parsedError: unknown = null;
+          try {
+            parsedError = JSON.parse(errText) as unknown;
+          } catch {
+            parsedError = errText;
+          }
+          status.tables.push({
+            name: item.key,
+            exactTable,
+            status: 'FAILED',
+            code: response.status,
+            rows: 0,
+            error: parsedError
+          });
+        }
+      } catch (err: unknown) {
+        status.tables.push({
+          name: item.key,
+          exactTable,
+          status: 'ERROR',
+          code: 0,
+          rows: 0,
+          error: err instanceof Error ? err.message : String(err)
+        });
+      }
+    }
+  }
+
+  res.json(status);
 });
 
 // 2. USERS

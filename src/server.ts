@@ -577,6 +577,15 @@ app.post('/api/pengaturan', async (req, res) => {
 app.get('/api/users', async (req, res) => {
   const supa = await trySupabaseGet('users');
   if (supa) {
+    // If table exists but empty, try to seed it and fallback to default users
+    if (supa.length === 0) {
+      console.log('Users table is empty. Attempting to seed default users...');
+      for (const u of db.users) {
+        await trySupabaseWrite('users', 'POST', u);
+      }
+      res.json(db.users);
+      return;
+    }
     const mapped = supa.map((u: any) => ({
       ...u,
       id: u.id !== undefined ? String(u.id) : ''

@@ -1,0 +1,7 @@
+{
+  "name": "Aplikasi Pengajuan Cuti ASN",
+  "description": "Sistem Informasi Manajemen Pengajuan Cuti Pegawai ASN (PNS & PPPK) lengkap dengan persetujuan berjenjang dan kuota N-2, N-1, N.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

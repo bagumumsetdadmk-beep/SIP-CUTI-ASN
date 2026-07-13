@@ -1,0 +1,1929 @@
+<!-- Toast Notification -->
+@if (cuti.toast(); as t) {
+  <div class="fixed top-5 right-5 z-[9999] flex items-center px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300"
+       [ngClass]="{
+         'bg-emerald-100 text-emerald-800 border-emerald-300': t.type === 'success',
+         'bg-rose-100 text-rose-800 border-rose-300': t.type === 'error',
+         'bg-blue-100 text-blue-800 border-blue-300': t.type === 'info'
+       }">
+    <mat-icon class="mr-2 text-[18px]">info</mat-icon> <span>{{ t.message }}</span>
+  </div>
+}
+
+@if (!cuti.currentUser()) {
+  <!-- LOGIN SCREEN -->
+  <div class="flex h-screen w-full items-center justify-center bg-slate-900 font-sans text-slate-800 p-6">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100">
+      <div class="bg-blue-600 p-8 text-center text-white">
+        <div class="w-16 h-16 bg-white/20 rounded-2xl mx-auto flex items-center justify-center text-3xl font-bold mb-3 shadow-inner">
+          <img [src]="cuti.pengaturan().logoInstansi" alt="Logo" class="w-12 h-12 object-contain" referrerpolicy="no-referrer" />
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">SI-CUTI ASN</h1>
+        <p class="text-xs text-blue-100 mt-1">{{ cuti.pengaturan().namaInstansi }}</p>
+      </div>
+
+      <div class="p-8 space-y-6">
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username</label>
+            <input type="text" formControlName="username"
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all bg-white"
+                   placeholder="Masukkan username..." />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+            <input type="password" formControlName="password"
+                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all bg-white"
+                   placeholder="Masukkan password..." />
+          </div>
+
+          <button type="submit"
+                  class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-semibold rounded-xl shadow-md transition-all text-sm">
+            Masuk ke Aplikasi
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- MAIN APPLICATION (Sleek Interface Theme) -->
+  <div class="flex h-screen w-full bg-slate-50 font-sans text-slate-800 overflow-hidden relative print:hidden">
+    
+    <!-- Mobile Sidebar Overlay -->
+    @if (sidebarOpen()) {
+      <div class="fixed inset-0 bg-slate-900/50 z-20 md:hidden backdrop-blur-sm" (click)="sidebarOpen.set(false)"></div>
+    }
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 z-30 fixed inset-y-0 left-0 transform transition-transform duration-300 md:relative md:translate-x-0"
+           [ngClass]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full'">
+      <div class="p-6 flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 bg-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0">
+            <img [src]="cuti.pengaturan().logoInstansi" alt="Opd Logo" class="w-7 h-7 object-contain" referrerpolicy="no-referrer" />
+          </div>
+          <div class="overflow-hidden">
+            <h1 class="text-base font-bold tracking-tight text-white truncate">SI-CUTI ASN</h1>
+            <p class="text-[10px] text-slate-400 truncate">{{ cuti.pengaturan().namaInstansi }}</p>
+          </div>
+        </div>
+        <button class="md:hidden text-slate-400 hover:text-white" (click)="sidebarOpen.set(false)">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-4 select-none custom-scrollbar">
+        <!-- Utama -->
+        <div class="px-6 py-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Utama</div>
+        <a (click)="setMenu('dashboard')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'dashboard' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">bar_chart</mat-icon> Dashboard
+        </a>
+        <a (click)="setMenu('pegawai')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'pegawai' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">people</mat-icon> Data Pegawai
+        </a>
+        <a (click)="setMenu('rekap')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'rekap' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">trending_up</mat-icon> Rekap Cuti Pegawai
+        </a>
+        @if (cuti.currentUser()?.role === 'Admin') {
+        <a (click)="setMenu('libur')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'libur' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">event</mat-icon> Hari Libur & Cuti
+        </a>
+        }
+        <!-- Master & Referensi -->
+        <div class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Master Data</div>
+        @if (cuti.currentUser()?.role === 'Admin') {
+        <a (click)="setMenu('pejabat')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'pejabat' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">military_tech</mat-icon> Atasan & Pejabat
+        </a>
+        <a (click)="setMenu('jenis')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'jenis' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">category</mat-icon> Jenis Cuti
+        </a>
+        }
+        <a (click)="setMenu('sisa')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'sisa' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">hourglass_empty</mat-icon> Sisa Cuti Tahunan
+        </a>
+        <!-- Layanan Cuti -->
+        <div class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Layanan Cuti</div>
+        <a (click)="setMenu('pengajuan')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all justify-between"
+           [ngClass]="cuti.activeMenu() === 'pengajuan' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <div class="flex items-center">
+            <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">edit_document</mat-icon> Pengajuan Cuti
+          </div>
+          @if (cuti.menungguApproval() > 0) {
+            <span class="px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-bold">{{ cuti.menungguApproval() }}</span>
+          }
+        </a>
+        @if (cuti.currentUser()?.role !== 'Verifikator') {
+        <a (click)="setMenu('cetak')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'cetak' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">print</mat-icon> Cetak Pengajuan Cuti
+        </a>
+        }
+
+        <!-- Sistem -->
+        @if (cuti.currentUser()?.role === 'Admin') {
+        <div class="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Sistem</div>
+        <a (click)="setMenu('pengaturan')"
+           class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+           [ngClass]="cuti.activeMenu() === 'pengaturan' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+          <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">settings</mat-icon> Pengaturan OPD
+        </a>
+          <a (click)="setMenu('users')"
+             class="flex items-center px-6 py-2.5 cursor-pointer text-sm font-medium transition-all"
+             [ngClass]="cuti.activeMenu() === 'users' ? 'bg-blue-600 text-white font-semibold' : 'hover:bg-slate-800 text-slate-300'">
+            <mat-icon class="mr-3 text-[20px] w-5 h-5 flex items-center justify-center">admin_panel_settings</mat-icon> Data User
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+      <!-- Header -->
+      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shrink-0 z-10">
+        <div class="flex items-center space-x-3">
+          <button class="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg flex items-center justify-center" (click)="sidebarOpen.set(true)">
+            <mat-icon>menu</mat-icon>
+          </button>
+          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+            @switch (cuti.activeMenu()) {
+              @case ('dashboard') { <mat-icon>bar_chart</mat-icon> Dashboard Ringkasan }
+              @case ('pegawai') { <mat-icon>people</mat-icon> Data Pegawai ASN }
+              @case ('libur') { <mat-icon>event</mat-icon> Data Hari Libur & Cuti Bersama }
+              @case ('pejabat') { <mat-icon>military_tech</mat-icon> Atasan dan Pejabat Penandatangan }
+              @case ('jenis') { <mat-icon>category</mat-icon> Data Jenis Cuti }
+              @case ('sisa') { <mat-icon>hourglass_empty</mat-icon> Sisa Cuti Tahunan }
+              @case ('pengajuan') { <mat-icon>edit_document</mat-icon> Pengajuan Cuti Pegawai }
+              @case ('rekap') { <mat-icon>trending_up</mat-icon> Rekap Pengambilan Cuti }
+              @case ('cetak') { <mat-icon>print</mat-icon> Cetak Surat Pengajuan Cuti }
+              @case ('pengaturan') { <mat-icon>settings</mat-icon> Pengaturan Instansi }
+              @case ('users') { <mat-icon>admin_panel_settings</mat-icon> Kelola Data User Aplikasi }
+            }
+          </h2>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+            <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-xs mr-2 uppercase">
+              {{ cuti.currentUser()?.username?.substring(0,2) }}
+            </div>
+            <div class="mr-3">
+              <p class="text-xs font-bold text-slate-700 leading-none mb-0.5">{{ cuti.currentUser()?.nama }}</p>
+              <p class="text-[10px] text-slate-500 leading-none">{{ cuti.currentUser()?.role }}</p>
+            </div>
+            <button (click)="logout()" title="Logout"
+                    class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-full transition-all shrink-0">
+              <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">logout</mat-icon>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Content Viewport -->
+      <div class="p-8 flex-1 overflow-y-auto custom-scrollbar">
+        @switch (cuti.activeMenu()) {
+          @case ('dashboard') {
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Total Pegawai</p>
+                <h3 class="text-3xl font-extrabold text-slate-900">{{ cuti.totalPegawai() }}</h3>
+                <p class="text-[11px] text-emerald-600 font-medium mt-1">PNS: {{ cuti.totalPNS() }} | PPPK: {{ cuti.totalPPPK() }}</p>
+              </div>
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Cuti Disetujui</p>
+                <h3 class="text-3xl font-extrabold text-blue-600">{{ cuti.cutiBerjalan() }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Surat cuti diterbitkan</p>
+              </div>
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Menunggu Approval</p>
+                <h3 class="text-3xl font-extrabold text-amber-500">{{ cuti.menungguApproval() }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Perlu verifikasi & persetujuan</p>
+              </div>
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
+                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Perlu Perbaikan</p>
+                <h3 class="text-3xl font-extrabold text-rose-600">{{ cuti.totalPerbaikan() }}</h3>
+                <p class="text-[11px] text-slate-400 mt-1">Data dikembalikan ke pemohon</p>
+              </div>
+            </div>
+
+            <!-- Dashboard Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <!-- Widgets Column (Chart) - Now on Left & Wide -->
+              <div class="lg:col-span-2 space-y-6">
+                <!-- Grafik Bulanan Pengajuan Cuti -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-full flex flex-col min-h-[350px]">
+                  <div class="flex items-center justify-between mb-8">
+                    <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                      <mat-icon class="text-blue-500">trending_up</mat-icon> Grafik Bulanan Pengajuan Cuti
+                    </h4>
+                    <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-bold uppercase tracking-wider">Tahun {{ 2026 }}</span>
+                  </div>
+                  <div class="flex-1 flex items-end justify-between space-x-2 sm:space-x-4 pt-4 border-t border-slate-100 mt-auto">
+                    @for(m of monthlyStats(); track m.label) {
+                      <div class="flex flex-col items-center flex-1 group">
+                        <div class="w-full bg-slate-100/50 rounded-t-lg relative h-48 flex items-end overflow-hidden">
+                          <div class="w-full bg-blue-500 rounded-t-lg transition-all duration-700 ease-out group-hover:bg-blue-600" 
+                               [style.height]="m.percentage + '%'">
+                          </div>
+                          <!-- Tooltip -->
+                          <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-10">
+                            {{ m.count }} Pengajuan
+                          </div>
+                        </div>
+                        <span class="text-[10px] text-slate-500 mt-3 font-bold uppercase tracking-widest">{{ m.label }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Activity Table - Now on Right & Minimal -->
+              <div class="lg:col-span-1 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                  <h4 class="font-bold text-slate-800 text-sm">Pengajuan Terbaru</h4>
+                  <a (click)="setMenu('pengajuan')" class="text-[10px] text-blue-600 font-bold cursor-pointer hover:underline uppercase tracking-wider">Semua</a>
+                </div>
+                <div class="overflow-hidden flex-1">
+                  <div class="divide-y divide-slate-100">
+                    @for (c of cuti.pengajuanCuti().slice(0,6); track c.id) {
+                      <div class="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
+                        <div class="min-w-0 flex-1 mr-3">
+                          <div class="font-bold text-slate-800 text-xs truncate">{{ c.namaPegawai }}</div>
+                          <div class="text-[10px] text-slate-400 truncate">{{ c.jenisCuti }} • {{ c.tanggalMulai | date:'dd MMM' }}</div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide shrink-0"
+                              [ngClass]="{
+                                'bg-amber-100 text-amber-700': c.status === 'Menunggu',
+                                'bg-emerald-100 text-emerald-700': c.status === 'Disetujui',
+                                'bg-rose-100 text-rose-700': c.status === 'Perbaikan'
+                              }">
+                          {{ c.status }}
+                        </span>
+                      </div>
+                    } @empty {
+                      <div class="p-8 text-center text-slate-400 text-xs italic">Belum ada data</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('pegawai') {
+            <!-- MENU 2: DATA PEGAWAI -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4 bg-slate-50">
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                  <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
+                         class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-xs w-64 focus:ring-2 focus:ring-blue-500 outline-none"
+                         placeholder="Cari nama atau NIP pegawai..." />
+                </div>
+                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                  @if (cuti.currentUser()?.role === 'Admin') {
+                  <button (click)="exportPegawaiTemplate()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-sm cursor-pointer whitespace-nowrap flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">file_download</mat-icon>
+                    <span>Template</span>
+                  </button>
+                  <label class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-xl shadow-sm cursor-pointer inline-flex items-center whitespace-nowrap gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">file_upload</mat-icon>
+                    <span>Import</span>
+                    <input type="file" accept=".xlsx,.xls" class="hidden" (change)="importPegawaiExcel($event)" />
+                  </label>
+                  }
+                  <button (click)="openModal('pegawai')"
+                          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer whitespace-nowrap">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                    <span>Tambah Pegawai</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Pegawai</th>
+                      <th class="px-5 py-3.5">Jabatan & Unit Kerja</th>
+                      <th class="px-5 py-3.5">Status</th>
+                      <th class="px-5 py-3.5">Masa Kerja</th>
+                      <th class="px-5 py-3.5 text-right">Fasilitas CRUD</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (p of paginatedPegawai(); track p.id) {
+                      <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-5 py-3">
+                          <div class="font-bold text-slate-800">{{ p.nama }}</div>
+                          <div class="text-[11px] text-slate-500 font-mono">NIP: {{ p.nip }}</div>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="font-semibold text-slate-700">{{ p.jabatan }}</div>
+                          <div class="text-xs text-slate-500">{{ p.unitKerja }}</div>
+                        </td>
+                        <td class="px-5 py-3 whitespace-nowrap">
+                          <span class="px-2.5 py-1 rounded-lg text-xs font-bold"
+                                [ngClass]="p.status === 'PNS' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'">
+                            {{ p.status }}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3 font-mono text-xs">{{ p.masaKerja }}</td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('pegawai', p)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg transition-colors flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            @if (cuti.currentUser()?.role === 'Admin') {
+                            <button (click)="confirmDelete('pegawai', p.id!, p.nama)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg transition-colors flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="px-5 py-8 text-center text-slate-400 text-xs">Tidak ada data pegawai ditemukan</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Pagination Data Pegawai -->
+              <div class="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+                <span class="text-xs text-slate-500">Menampilkan halaman {{ pegawaiPage() }} dari {{ pegawaiTotalPages() }} (Total {{ filteredPegawai().length }} data)</span>
+                <div class="flex items-center space-x-2">
+                  <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50"
+                          [disabled]="pegawaiPage() === 1" (click)="prevPegawaiPage()">Sebelumnya</button>
+                  <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50"
+                          [disabled]="pegawaiPage() === pegawaiTotalPages()" (click)="nextPegawaiPage()">Selanjutnya</button>
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('libur') {
+            <!-- MENU 3: HARI LIBUR -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h4 class="font-bold text-slate-800">Daftar Hari Libur Nasional & Cuti Bersama</h4>
+                <button (click)="openModal('libur')"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer">
+                  <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                  <span>Tambah Hari Libur</span>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Tanggal</th>
+                      <th class="px-5 py-3.5">Nama Hari Libur</th>
+                      <th class="px-5 py-3.5">Jenis Libur</th>
+                      <th class="px-5 py-3.5">Keterangan</th>
+                      <th class="px-5 py-3.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (h of cuti.hariLibur(); track h.id) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3 font-mono font-bold text-slate-800">{{ h.tanggalLibur | date:'dd MMMM yyyy' }}</td>
+                        <td class="px-5 py-3 font-semibold text-slate-700">{{ h.namaLibur }}</td>
+                        <td class="px-5 py-3">
+                          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                                [ngClass]="h.jenisLibur === 'Libur Nasional' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'">
+                            {{ h.jenisLibur }}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3 text-slate-500 text-xs">{{ h.keterangan || '-' }}</td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('libur', h)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            <button (click)="confirmDelete('libur', h.id!, h.namaLibur)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('pejabat') {
+            <!-- MENU 4: ATASAN & PEJABAT -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h4 class="font-bold text-slate-800">Daftar Pejabat Penandatangan & Atasan Langsung</h4>
+                <button (click)="openModal('pejabat')"
+                        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                  <span>Tambah Pejabat</span>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Nama Pejabat</th>
+                      <th class="px-5 py-3.5">NIP</th>
+                      <th class="px-5 py-3.5">Jabatan</th>
+                      <th class="px-5 py-3.5">Peran Penandatanganan</th>
+                      <th class="px-5 py-3.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (a of cuti.atasanPejabat(); track a.id) {
+                      <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-3 font-bold text-slate-800">{{ a.namaPegawai }}</td>
+                        <td class="px-5 py-3 font-mono text-xs text-slate-500">{{ a.nip }}</td>
+                        <td class="px-5 py-3 text-slate-700">{{ a.jabatan }}</td>
+                        <td class="px-5 py-3">
+                          <span class="px-3 py-1 rounded-lg text-xs font-bold"
+                                [ngClass]="a.peran === 'Penanggung Jawab' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'">
+                            {{ a.peran }}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('pejabat', a)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            <button (click)="confirmDelete('pejabat', a.id!, a.namaPegawai)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('jenis') {
+            <!-- MENU 5: JENIS CUTI -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h4 class="font-bold text-slate-800">Master Jenis Cuti ASN</h4>
+                <button (click)="openModal('jenis')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl cursor-pointer flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                  <span>Tambah Jenis Cuti</span>
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Kode</th>
+                      <th class="px-5 py-3.5">Nama Jenis Cuti</th>
+                      <th class="px-5 py-3.5">Maksimal Hari</th>
+                      <th class="px-5 py-3.5">Keterangan</th>
+                      <th class="px-5 py-3.5">Berlaku Untuk</th>
+                      <th class="px-5 py-3.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (j of cuti.jenisCuti(); track j.id) {
+                      <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-3 font-mono font-bold text-blue-600">{{ j.kode }}</td>
+                        <td class="px-5 py-3 font-bold text-slate-800">{{ j.namaCuti }}</td>
+                        <td class="px-5 py-3 font-semibold">{{ j.maksimalHari }} Hari</td>
+                        <td class="px-5 py-3 text-xs text-slate-500 max-w-xs">{{ j.keterangan }}</td>
+                        <td class="px-5 py-3">
+                          <div class="flex flex-wrap gap-1">
+                            @for (status of (j.berlakuUntuk || '').split(','); track status) {
+                              <span class="px-2 py-1 rounded-lg text-[10px] font-bold"
+                                    [ngClass]="{
+                                      'bg-emerald-100 text-emerald-700': status.trim() === 'PNS',
+                                      'bg-amber-100 text-amber-700': status.trim() === 'CPNS',
+                                      'bg-blue-100 text-blue-700': status.trim() === 'PPPK',
+                                      'bg-orange-100 text-orange-700': status.trim() === 'CPPPK',
+                                      'bg-pink-100 text-pink-700': status.trim() === 'PPPK PW',
+                                      'bg-slate-100 text-slate-700': !['PNS', 'CPNS', 'PPPK', 'CPPPK', 'PPPK PW'].includes(status.trim())
+                                    }">
+                                {{ status.trim() }}
+                              </span>
+                            }
+                          </div>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('jenis', j)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            <button (click)="confirmDelete('jenis', j.id!, j.namaCuti)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('sisa') {
+            <!-- MENU 6: SISA CUTI TAHUNAN -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4 bg-slate-50">
+                <div>
+                  <h4 class="font-bold text-slate-800">Manajemen Sisa Cuti Tahunan Pegawai</h4>
+                  <p class="text-xs text-slate-500">Mencatat sisa N-2 (2 tahun lalu), N-1 (1 tahun lalu), dan N (kuota berjalan: 12 hari)</p>
+                </div>
+                <div class="flex space-x-2 flex-wrap gap-y-2 justify-end">
+                  @if (cuti.currentUser()?.role === 'Admin') {
+                  <button (click)="downloadTemplateSisa()"
+                          class="px-4 py-2 bg-slate-600 hover:bg-slate-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">download</mat-icon>
+                    <span>Template Excel</span>
+                  </button>
+                  <button (click)="triggerImportSisa()"
+                          class="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">upload</mat-icon>
+                    <span>Import Excel</span>
+                  </button>
+                  <input type="file" #fileInputImportSisa class="hidden" accept=".xlsx, .xls" (change)="onImportSisaCuti($event)" />
+                  <button (click)="cuti.generateDefaultSisaCuti()"
+                          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">sync</mat-icon>
+                    <span>Generate Kuota Tahun Berjalan (12 Hari)</span>
+                  </button>
+                  <button (click)="openModal('sisa')"
+                          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-sm cursor-pointer flex items-center gap-1">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                    <span>Tambah Kuota</span>
+                  </button>
+                  }
+                </div>
+              </div>
+              <div class="px-5 py-3 border-b border-slate-200 bg-white">
+                <div class="relative">
+                  <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px] w-5 h-5 flex items-center justify-center">search</mat-icon>
+                  <input type="text" [value]="searchSisaTabel()" (input)="searchSisaTabel.set($any($event.target).value)" placeholder="Cari nama atau NIP pegawai..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Nama Pegawai</th>
+                      <th class="px-5 py-3.5 text-center bg-amber-50 text-amber-800">N-2 ({{ cuti.yearN2() }})</th>
+                      <th class="px-5 py-3.5 text-center bg-emerald-50 text-emerald-800">N-1 ({{ cuti.yearN1() }})</th>
+                      <th class="px-5 py-3.5 text-center bg-blue-50 text-blue-800">N ({{ cuti.yearN() }})</th>
+                      <th class="px-5 py-3.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (s of paginatedSisa(); track s.id) {
+                      <tr class="hover:bg-slate-50 font-medium">
+                        <td class="px-5 py-3">
+                          <div class="font-bold text-slate-800">{{ s.namaPegawai }}</div>
+                          <div class="text-[11px] text-slate-400 font-mono">NIP: {{ s.nip }}</div>
+                        </td>
+                        <td class="px-5 py-3 text-center bg-amber-50/50 font-bold text-amber-700">{{ s.sisaN2 }} Hari</td>
+                        <td class="px-5 py-3 text-center bg-emerald-50/50 font-bold text-emerald-700">{{ s.sisaN1 }} Hari</td>
+                        <td class="px-5 py-3 text-center bg-blue-50/50 font-bold text-blue-700">{{ s.sisaN }} Hari</td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            @if (cuti.currentUser()?.role === 'Admin') {
+                            <button (click)="openModal('sisa', s)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            <button (click)="confirmDelete('sisa', s.id!, s.namaPegawai)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <span class="text-xs text-slate-500">Menampilkan halaman {{ sisaPage() }} dari {{ sisaTotalPages() }} (Total {{ filteredSisaTabel().length }} data)</span>
+                <div class="flex items-center space-x-2">
+                  <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50" 
+                          [disabled]="sisaPage() === 1" (click)="prevSisaPage()">Sebelumnya</button>
+                  <button class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50" 
+                          [disabled]="sisaPage() === sisaTotalPages()" (click)="nextSisaPage()">Selanjutnya</button>
+                </div>
+              </div>
+            </div>
+          }
+
+          @case ('rekap') {
+            <!-- MENU 7: REKAP CUTI PEGAWAI -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 bg-slate-50">
+                <h4 class="font-bold text-slate-800">Rekap Pengambilan Cuti Pegawai ASN</h4>
+                <p class="text-xs text-slate-500">Diambil secara otomatis dari jumlah hari cuti yang telah disetujui (Approved)</p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Nama Pegawai & Unit Kerja</th>
+                      <th class="px-4 py-3.5 text-center">Tahunan (CT)</th>
+                      <th class="px-4 py-3.5 text-center">Besar (CB)</th>
+                      <th class="px-4 py-3.5 text-center">Sakit (CS)</th>
+                      <th class="px-4 py-3.5 text-center">Lahir (CM)</th>
+                      <th class="px-4 py-3.5 text-center">Alasan Penting (CAP)</th>
+                      <th class="px-4 py-3.5 text-center">CLTN</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 font-medium">
+                    @for (r of cuti.rekapCuti(); track r.nip) {
+                      <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-3">
+                          <div class="font-bold text-slate-800">{{ r.nama }}</div>
+                          <div class="text-xs text-slate-400">{{ r.unitKerja }}</div>
+                        </td>
+                        <td class="px-4 py-3 text-center">{{ r.ct }}</td>
+                        <td class="px-4 py-3 text-center">{{ r.cb }}</td>
+                        <td class="px-4 py-3 text-center">{{ r.cs }}</td>
+                        <td class="px-4 py-3 text-center">{{ r.cm }}</td>
+                        <td class="px-4 py-3 text-center">{{ r.cap }}</td>
+                        <td class="px-4 py-3 text-center">{{ r.cltn }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('pengajuan') {
+            <!-- MENU 8: PENGAJUAN CUTI -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4 bg-slate-50">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Filter Status:</span>
+                  <div class="flex bg-slate-200 p-1 rounded-xl space-x-1">
+                    <button (click)="filterStatus.set('ALL')"
+                            class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                            [ngClass]="filterStatus() === 'ALL' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'">Semua</button>
+                    <button (click)="filterStatus.set('Menunggu')"
+                            class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                            [ngClass]="filterStatus() === 'Menunggu' ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-600'">Menunggu</button>
+                    <button (click)="filterStatus.set('Disetujui')"
+                            class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                            [ngClass]="filterStatus() === 'Disetujui' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'">Disetujui</button>
+                    <button (click)="filterStatus.set('Perbaikan')"
+                            class="px-3 py-1 text-xs font-bold rounded-lg transition-all"
+                            [ngClass]="filterStatus() === 'Perbaikan' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600'">Perbaikan</button>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                  <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
+                         class="px-4 py-2 rounded-xl border border-slate-300 bg-white text-xs w-56 focus:ring-2 focus:ring-blue-500 outline-none"
+                         placeholder="Cari pengajuan..." />
+                  @if (cuti.currentUser()?.role !== 'Verifikator') {
+                  <button (click)="openModal('pengajuan')"
+                          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-semibold rounded-xl shadow-sm transition-all flex items-center space-x-1 cursor-pointer">
+                    <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                    <span>Buat Pengajuan Cuti</span>
+                  </button>
+                  }
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">ID & Tanggal</th>
+                      <th class="px-5 py-3.5">Pegawai</th>
+                      <th class="px-5 py-3.5">Jenis & Lama Cuti</th>
+                      <th class="px-5 py-3.5">Tanggal Pelaksanaan</th>
+                      <th class="px-5 py-3.5">Status Approval</th>
+                      <th class="px-5 py-3.5 text-right">Aksi & Approval Modal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (c of filteredPengajuan(); track c.id) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3">
+                          <div class="font-mono font-bold text-blue-600">{{ c.id }}</div>
+                          <div class="text-xs text-slate-400">{{ c.tanggalPengajuan | date:'dd MMM yyyy' }}</div>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="font-bold text-slate-800">{{ c.namaPegawai }}</div>
+                          <div class="text-[11px] text-slate-400 font-mono">NIP: {{ c.nip }}</div>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="font-semibold text-slate-700">{{ c.jenisCuti }}</div>
+                          <div class="text-xs font-bold text-blue-600">{{ c.lamaCuti }} Hari</div>
+                        </td>
+                        <td class="px-5 py-3 text-xs text-slate-600">
+                          <span class="font-bold">{{ c.tanggalMulai | date:'dd/MM/yy' }}</span> s.d. <span class="font-bold">{{ c.tanggalSelesai | date:'dd/MM/yy' }}</span>
+                        </td>
+                        <td class="px-5 py-3 whitespace-nowrap">
+                          <span class="px-3 py-1 rounded-full text-xs font-bold inline-flex items-center shadow-sm"
+                                [ngClass]="{
+                                  'bg-amber-100 text-amber-800 border border-amber-200': c.status === 'Menunggu',
+                                  'bg-emerald-100 text-emerald-800 border border-emerald-200': c.status === 'Disetujui',
+                                  'bg-rose-100 text-rose-800 border border-rose-200': c.status === 'Perbaikan'
+                                }">
+                            <span class="w-1.5 h-1.5 rounded-full mr-1.5"
+                                  [ngClass]="{
+                                    'bg-amber-500 animate-pulse': c.status === 'Menunggu',
+                                    'bg-emerald-500': c.status === 'Disetujui',
+                                    'bg-rose-500': c.status === 'Perbaikan'
+                                  }"></span>
+                            {{ c.status }}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('view_pengajuan', c)" class="p-1.5 hover:bg-emerald-50 text-emerald-500 rounded-lg flex items-center justify-center" title="View"><mat-icon class="text-[18px]">visibility</mat-icon></button>
+                            @if (cuti.currentUser()?.role === 'Admin' || (cuti.currentUser()?.role === 'Operator' && c.createdBy == cuti.currentUser()?.id && c.status !== 'Disetujui')) {
+                            <button (click)="openModal('pengajuan', c)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            <button (click)="confirmDelete('pengajuan', c.id!, c.namaPegawai + ' - ' + c.jenisCuti)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="px-5 py-8 text-center text-slate-400 text-xs italic">Tidak ada data pengajuan cuti yang sesuai filter</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('cetak') {
+            <!-- MENU 9: CETAK PENGAJUAN CUTI -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 bg-slate-50">
+                <h4 class="font-bold text-slate-800">Cetak Pengajuan & Surat Izin Cuti ASN</h4>
+                <p class="text-xs text-slate-500">Menampilkan pengajuan cuti yang telah disetujui (Approved) siap cetak dengan kop OPD resmi</p>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Nomor Surat</th>
+                      <th class="px-5 py-3.5">Pegawai ASN</th>
+                      <th class="px-5 py-3.5">Jenis Cuti</th>
+                      <th class="px-5 py-3.5">Pelaksanaan</th>
+                      <th class="px-5 py-3.5">Pejabat Pemberi Izin</th>
+                      <th class="px-5 py-3.5 text-right">Tombol Aksi Cetak</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (c of cuti.pengajuanCuti(); track c.id) {
+                      @if (c.status === 'Disetujui') {
+                        <tr class="hover:bg-slate-50">
+                          <td class="px-5 py-3 font-mono font-bold text-slate-800">800/{{ c.id?.substring(3) }}/{{ cuti.pengaturan().namaInstansi.substring(0,3) }}/2026</td>
+                          <td class="px-5 py-3">
+                            <div class="font-bold text-slate-800">{{ c.namaPegawai }}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">NIP: {{ c.nip }}</div>
+                          </td>
+                          <td class="px-5 py-3 font-semibold text-blue-600">{{ c.jenisCuti }} ({{ c.lamaCuti }} Hari)</td>
+                          <td class="px-5 py-3 text-xs">{{ c.tanggalMulai | date:'dd/MM/yyyy' }} s.d. {{ c.tanggalSelesai | date:'dd/MM/yyyy' }}</td>
+                          <td class="px-5 py-3 text-xs font-medium text-slate-700">{{ c.pejabatMenyetujui }}</td>
+                          <td class="px-5 py-3">
+                            <div class="flex justify-end items-center space-x-2">
+                              <button (click)="openModal('view_pengajuan', c)" class="p-1.5 hover:bg-emerald-50 text-emerald-500 rounded-lg flex items-center justify-center" title="View"><mat-icon class="text-[18px]">visibility</mat-icon></button>
+                              @if (cuti.currentUser()?.role === 'Admin' || cuti.currentUser()?.role === 'Verifikator' || (cuti.currentUser()?.role === 'Operator' && c.createdBy == cuti.currentUser()?.id)) {
+                              <button (click)="openModal('cetak_surat', c)"
+                                      class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all inline-flex items-center space-x-1.5 cursor-pointer">
+                                <mat-icon class="mr-2 text-[18px]">print</mat-icon> <span>Cetak Surat Cuti (PDF)</span>
+                              </button>
+                              }
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+
+          @case ('pengaturan') {
+            <!-- MENU 10: PENGATURAN -->
+            <div class="max-w-4xl bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-8">
+              <div class="border-b border-slate-200 pb-5 mb-6">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><mat-icon>settings</mat-icon> Pengaturan Instansi & Database Supabase</h3>
+                <p class="text-xs text-slate-500 mt-1">Konfigurasi kop surat OPD, pejabat penandatangan default, dan kredensial API Supabase.</p>
+              </div>
+
+              <form [formGroup]="pengaturanForm" (ngSubmit)="onSavePengaturan()" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Instansi / OPD</label>
+                    <input type="text" formControlName="namaInstansi"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Kepala OPD</label>
+                    <input type="text" formControlName="namaKepalaOpd"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">NIP Kepala OPD</label>
+                    <input type="text" formControlName="nipKepalaOpd"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 font-mono outline-none" />
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Alamat Lengkap Instansi</label>
+                    <input type="text" formControlName="alamatInstansi"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+
+                  <div class="md:col-span-2 space-y-4">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Logo Instansi</label>
+                    <div class="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                      <div class="w-28 h-28 rounded-2xl bg-white shadow-sm border border-slate-200 flex items-center justify-center p-2 shrink-0 overflow-hidden">
+                        <img [src]="pengaturanForm.get('logoInstansi')?.value" alt="Logo preview" class="w-full h-full object-contain" referrerpolicy="no-referrer" />
+                      </div>
+                      <div class="flex-1 space-y-3 text-center md:text-left">
+                        <p class="text-[11px] text-slate-500 font-medium">Gunakan logo resmi Pemerintah Kabupaten/Kota dalam format PNG/JPG transparan.</p>
+                        <div class="flex justify-center md:justify-start">
+                          <input type="file" accept="image/*" (change)="onFileSelected($event, 'logoInstansi')"
+                                 id="logoUpload" class="hidden" />
+                          <label for="logoUpload" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-bold cursor-pointer transition-colors border border-blue-200 shadow-sm">
+                            <mat-icon class="text-[18px]">upload</mat-icon>
+                            <span>Ganti Logo</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                  <button type="submit"
+                          class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md text-sm transition-all cursor-pointer flex items-center gap-2">
+                    <mat-icon>save</mat-icon>
+                    <span>Simpan Pengaturan Sistem</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          }
+
+          @case ('users') {
+            <!-- MENU 12: DATA USER MANAGEMENT -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h4 class="font-bold text-slate-800">Manajemen Hak Akses User Aplikasi</h4>
+                <button (click)="openModal('user')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl cursor-pointer flex items-center gap-1">
+                  <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">add</mat-icon>
+                  <span>Tambah User Baru</span>
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-slate-100/80 text-slate-600 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                      <th class="px-5 py-3.5">Username</th>
+                      <th class="px-5 py-3.5">Nama User</th>
+                      <th class="px-5 py-3.5">Role Akses</th>
+                      <th class="px-5 py-3.5">NIP Terkait</th>
+                      <th class="px-5 py-3.5 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    @for (u of cuti.users(); track u.id) {
+                      <tr class="hover:bg-slate-50">
+                        <td class="px-5 py-3 font-mono font-bold text-blue-600">{{ u.username }}</td>
+                        <td class="px-5 py-3 font-bold text-slate-800">{{ u.nama }}</td>
+                        <td class="px-5 py-3">
+                          <span class="px-2.5 py-1 rounded text-xs font-bold"
+                                [ngClass]="{
+                                  'bg-amber-100 text-amber-800': u.role === 'Admin',
+                                  'bg-purple-100 text-purple-800': u.role === 'Verifikator',
+                                  'bg-slate-100 text-slate-800': u.role === 'Operator'
+                                }">{{ u.role }}</span>
+                        </td>
+                        <td class="px-5 py-3 font-mono text-xs">{{ u.nip || '-' }}</td>
+                        <td class="px-5 py-3">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button (click)="openModal('user', u)" class="p-1.5 hover:bg-blue-50 text-blue-400 rounded-lg flex items-center justify-center" title="Edit"><mat-icon class="text-[18px]">edit</mat-icon></button>
+                            @if (u.username !== 'admin_cuti') {
+                              <button (click)="confirmDelete('user', u.id!, u.username)" class="p-1.5 hover:bg-rose-50 text-rose-400 rounded-lg flex items-center justify-center" title="Delete"><mat-icon class="text-[18px]">delete</mat-icon></button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Footer Info -->
+      <footer class="px-8 py-3 bg-white border-t border-slate-200 flex justify-between items-center text-[11px] text-slate-400 shrink-0 z-10">
+        <p>&copy; 2026 BKPSDM & Sekretariat Daerah - Sistem Manajemen Cuti ASN</p>
+        <div class="flex space-x-4">
+          <span>v2.4.0-ASN</span>
+          <span class="flex items-center font-semibold text-slate-500"><span class="w-2 h-2 bg-emerald-500 rounded-full mr-1.5 animate-pulse"></span> Sleek Interface Active</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+}
+
+<!-- ======================================================= -->
+<!--                   ALL MODAL DIALOGS                     -->
+<!-- ======================================================= -->
+
+@if (activeModal() === 'pegawai') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 border border-slate-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">{{ editingId() ? 'Edit Data Pegawai' : 'Tambah Pegawai Baru' }}</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="pegawaiForm" (ngSubmit)="onSavePegawai()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Lengkap & Gelar</label>
+          <input type="text" formControlName="nama" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">NIP (18 Digit)</label>
+            <input type="text" formControlName="nip" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Status Kepegawaian</label>
+            <select formControlName="status" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="PNS">PNS</option>
+              <option value="CPNS">CPNS</option>
+              <option value="PPPK">PPPK</option>
+              <option value="CPPPK">CPPPK</option>
+              <option value="PPPK PW">PPPK PW</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Jabatan</label>
+          <input type="text" formControlName="jabatan" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Unit Kerja</label>
+            <input type="text" formControlName="unitKerja" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Jenis Kelamin</label>
+            <select formControlName="jenisKelamin" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Masa Kerja (Contoh: 8 Tahun 4 Bulan)</label>
+          <input type="text" formControlName="masaKerja" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-sm font-semibold hover:bg-slate-100">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 shadow-md flex items-center justify-center gap-2">
+            <mat-icon>save</mat-icon>
+            <span>Simpan Pegawai</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'libur') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Kelola Hari Libur</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="liburForm" (ngSubmit)="onSaveLibur()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tanggal Libur</label>
+          <input type="date" formControlName="tanggalLibur" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Hari Libur</label>
+          <input type="text" formControlName="namaLibur" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm outline-none" placeholder="Contoh: Idul Fitri 1447 H" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Jenis Libur</label>
+          <select formControlName="jenisLibur" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white outline-none">
+            <option value="Libur Nasional">Libur Nasional</option>
+            <option value="Cuti Bersama">Cuti Bersama</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Keterangan Tambahan</label>
+          <input type="text" formControlName="keterangan" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm outline-none" />
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'pejabat') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Pejabat Penandatangan</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="pejabatForm" (ngSubmit)="onSavePejabat()" class="space-y-4">
+        <div class="relative">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Pejabat</label>
+          <div (click)="dropdownPejabatOpen.set(!dropdownPejabatOpen())" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white cursor-pointer flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+            <span [class.text-slate-400]="!pejabatForm.get('namaPegawai')?.value">{{ pejabatForm.get('namaPegawai')?.value || '-- Pilih Pegawai --' }}</span>
+            <mat-icon class="text-slate-500">expand_more</mat-icon>
+          </div>
+          
+          @if (dropdownPejabatOpen()) {
+            <div class="fixed inset-0 z-40" (click)="dropdownPejabatOpen.set(false)"></div>
+            <div class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 flex flex-col">
+              <div class="p-2 border-b shrink-0">
+                <input type="text" [value]="searchPejabat()" (input)="searchPejabat.set($any($event.target).value)" 
+                       class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500" 
+                       placeholder="Cari nama atau jabatan..." autofocus />
+              </div>
+              <div class="overflow-y-auto p-1 custom-scrollbar">
+                @for (p of filteredPejabatList(); track p.id) {
+                  <div (click)="selectPejabat(p); dropdownPejabatOpen.set(false)" class="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-lg text-sm flex flex-col">
+                    <span class="font-bold text-slate-800">{{ p.nama }}</span>
+                    <span class="text-[10px] text-slate-500">{{ p.jabatan }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Peran Penandatanganan</label>
+          <select formControlName="peran" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white outline-none">
+            <option value="Penanggung Jawab">Penanggung Jawab (Kepala OPD / Sekda)</option>
+            <option value="Atasan Langsung">Atasan Langsung (Kabag / Kabid)</option>
+          </select>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Simpan Pejabat</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'jenis') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Kelola Jenis Cuti</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="jenisForm" (ngSubmit)="onSaveJenis()" class="space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Kode</label>
+            <input type="text" formControlName="kode" class="w-full px-3 py-2 rounded-xl border font-mono uppercase text-sm" placeholder="CT" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama Cuti</label>
+            <input type="text" formControlName="namaCuti" class="w-full px-3 py-2 rounded-xl border text-sm" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Maksimal Hari</label>
+            <input type="number" formControlName="maksimalHari" class="w-full px-3 py-2 rounded-xl border text-sm" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Berlaku Untuk</label>
+            <div class="flex flex-wrap gap-2">
+              @for (v of ['PNS', 'CPNS', 'PPPK', 'CPPPK', 'PPPK PW']; track v) {
+                <button type="button" 
+                        (click)="toggleBerlakuUntuk(v)"
+                        [class]="isBerlaku(v) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+                        class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all border shadow-sm">{{ v }}</button>
+              }
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1 italic">Pilih satu atau lebih kategori ASN yang berhak.</p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Keterangan</label>
+          <input type="text" formControlName="keterangan" class="w-full px-3 py-2 rounded-xl border text-sm" />
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'sisa') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Kuota Cuti Tahunan Pegawai</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="sisaForm" (ngSubmit)="onSaveSisa()" class="space-y-4">
+        <div class="relative">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Pilih Pegawai</label>
+          <div (click)="dropdownSisaOpen.set(!dropdownSisaOpen())" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white cursor-pointer flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+            <span [class.text-slate-400]="!sisaForm.get('nip')?.value">
+              @if (sisaForm.get('namaPegawai')?.value) {
+                {{ sisaForm.get('namaPegawai')?.value }}
+              } @else {
+                -- Pilih Pegawai --
+              }
+            </span>
+            <mat-icon class="text-slate-500">expand_more</mat-icon>
+          </div>
+          
+          @if (dropdownSisaOpen()) {
+            <div class="fixed inset-0 z-40" (click)="dropdownSisaOpen.set(false)"></div>
+            <div class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 flex flex-col">
+              <div class="p-2 border-b shrink-0">
+                <input type="text" [value]="searchSisaPegawai()" (input)="searchSisaPegawai.set($any($event.target).value)" 
+                       class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500" 
+                       placeholder="Cari nip atau nama..." autofocus />
+              </div>
+              <div class="overflow-y-auto p-1 custom-scrollbar">
+                @for (p of filteredSisaPegawaiList(); track p.nip) {
+                  <div (click)="selectSisaPegawai(p); dropdownSisaOpen.set(false)" class="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-lg text-sm flex flex-col">
+                    <span class="font-bold text-slate-800">{{ p.nama }}</span>
+                    <span class="text-[10px] text-slate-500 font-mono">{{ p.nip }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Tahun Berjalan</label>
+          <input type="number" formControlName="tahun" class="w-full px-4 py-2 rounded-xl border text-sm font-mono" />
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-amber-700 mb-1">Sisa {{ sisaForm.get('tahun')?.value - 2 }}</label>
+            <input type="number" formControlName="sisaN2" class="w-full px-2 py-2 rounded-xl border bg-amber-50 text-center font-bold" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-emerald-700 mb-1">Sisa {{ sisaForm.get('tahun')?.value - 1 }}</label>
+            <input type="number" formControlName="sisaN1" class="w-full px-2 py-2 rounded-xl border bg-emerald-50 text-center font-bold" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-blue-700 mb-1">Kuota {{ sisaForm.get('tahun')?.value }}</label>
+            <input type="number" formControlName="sisaN" class="w-full px-2 py-2 rounded-xl border bg-blue-50 text-center font-bold" />
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Simpan Kuota</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'pengajuan') {
+  <!-- MODAL PENGAJUAN CUTI BARU -->
+  <div class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 border border-slate-100 flex flex-col max-h-[90vh]">
+      <div class="flex justify-between items-center border-b pb-4 mb-6 shrink-0">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">Formulir Pengajuan Cuti Pegawai ASN</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Lengkapi data pelaksanaan cuti, sisa kuota terhitung otomatis sesuai NIP pegawai.</p>
+        </div>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+
+      <form [formGroup]="pengajuanForm" (ngSubmit)="onSavePengajuan()" class="space-y-5 overflow-y-auto custom-scrollbar flex-1 pr-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tanggal Pengajuan</label>
+            <input type="date" formControlName="tanggalPengajuan" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-slate-50 font-mono" />
+          </div>
+          <div class="relative">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Nama Pegawai</label>
+            <div (click)="dropdownPengajuanOpen.set(!dropdownPengajuanOpen())" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white cursor-pointer flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+              <span [class.text-slate-400]="!pengajuanForm.get('nip')?.value">
+                @if (pengajuanForm.get('namaPegawai')?.value) {
+                  {{ pengajuanForm.get('namaPegawai')?.value }}
+                } @else {
+                  -- Pilih Pegawai --
+                }
+              </span>
+              <mat-icon class="text-slate-500">expand_more</mat-icon>
+            </div>
+            
+            @if (dropdownPengajuanOpen()) {
+              <div class="fixed inset-0 z-40" (click)="dropdownPengajuanOpen.set(false)"></div>
+              <div class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 flex flex-col">
+                <div class="p-2 border-b shrink-0">
+                  <input type="text" [value]="searchPegawaiPengajuan()" (input)="searchPegawaiPengajuan.set($any($event.target).value)" 
+                         class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500" 
+                         placeholder="Cari nip atau nama..." autofocus />
+                </div>
+                <div class="overflow-y-auto p-1 custom-scrollbar">
+                  @for (p of filteredPegawaiPengajuanList(); track p.nip) {
+                    <div (click)="selectPengajuanPegawai(p); dropdownPengajuanOpen.set(false)" class="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-lg text-sm flex flex-col">
+                      <span class="font-bold text-slate-800">{{ p.nama }}</span>
+                      <span class="text-[10px] text-slate-500 font-mono">{{ p.nip }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Kuota Otomatis Display -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <p class="text-[11px] font-bold text-slate-600 uppercase mb-2 flex items-center gap-2"><mat-icon class="text-[16px]">balance</mat-icon> Sisa Kuota Cuti Tahunan ({{ cuti.yearN2() }}, {{ cuti.yearN1() }}, {{ cuti.yearN() }}):</p>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-amber-100/70 p-2.5 rounded-lg border border-amber-300 text-center">
+              <span class="text-[10px] uppercase font-bold text-amber-800 block">Sisa {{ cuti.yearN2() }}</span>
+              <span class="text-base font-black text-amber-900">{{ pengajuanForm.get('sisaN2')?.value }} Hari</span>
+            </div>
+            <div class="bg-emerald-100/70 p-2.5 rounded-lg border border-emerald-300 text-center">
+              <span class="text-[10px] uppercase font-bold text-emerald-800 block">Sisa {{ cuti.yearN1() }}</span>
+              <span class="text-base font-black text-emerald-900">{{ pengajuanForm.get('sisaN1')?.value }} Hari</span>
+            </div>
+            <div class="bg-blue-100/70 p-2.5 rounded-lg border border-blue-300 text-center">
+              <span class="text-[10px] uppercase font-bold text-blue-800 block">Kuota {{ cuti.yearN() }}</span>
+              <span class="text-base font-black text-blue-900">{{ pengajuanForm.get('sisaN')?.value }} Hari</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Jenis Cuti</label>
+            <select formControlName="jenisCuti" class="w-full px-4 py-2 rounded-xl border text-sm bg-white font-medium">
+              @for (j of allowedJenisCuti(); track j.id) {
+                <option [value]="j.namaCuti">{{ j.namaCuti }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Tanggal Mulai</label>
+            <input type="date" formControlName="tanggalMulai" class="w-full px-4 py-2 rounded-xl border text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-blue-600 mb-1">Lama Cuti (Hari)</label>
+            <input type="number" formControlName="lamaCuti" class="w-full px-4 py-2 rounded-xl border border-blue-300 bg-blue-50/50 font-bold text-sm text-blue-700" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-emerald-600 mb-1">Tanggal Selesai (Terisi Otomatis)</label>
+          <input type="date" formControlName="tanggalSelesai" readonly class="w-full px-4 py-2 rounded-xl border bg-slate-100 font-mono font-bold text-slate-700 outline-none cursor-not-allowed text-sm" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Alasan Cuti (Text Area 2 Baris)</label>
+            <textarea formControlName="alasanCuti" rows="2" class="w-full px-4 py-2 rounded-xl border text-sm outline-none resize-none" placeholder="Tuliskan alasan lengkap pengajuan cuti..."></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Alamat Selama Cuti (Text Area 2 Baris)</label>
+            <textarea formControlName="alamatSelamaCuti" rows="2" class="w-full px-4 py-2 rounded-xl border text-sm outline-none resize-none" placeholder="Alamat lengkap tempat tinggal selama menjalankan cuti..."></textarea>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Telp / HP yang Mudah Dihubungi</label>
+            <input type="text" formControlName="telp" class="w-full px-4 py-2 rounded-xl border text-sm font-mono" placeholder="0812xxxx..." />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Dokumen Pendukung (Upload PDF)</label>
+            <div class="flex items-center space-x-2">
+              <input type="file" accept=".pdf" (change)="onFileChange($event)" class="text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+            </div>
+            @if (uploadedFileName()) {
+              <p class="text-[11px] text-emerald-600 font-bold mt-1 flex items-center gap-1"><mat-icon class="text-[12px] w-3.5 h-3.5 flex items-center justify-center">check_circle</mat-icon> Terlampir: {{ uploadedFileName() }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
+          <div class="relative">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Atasan Langsung</label>
+            <div (click)="dropdownAtasanOpen.set(!dropdownAtasanOpen())" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white cursor-pointer flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+              <span [class.text-slate-400]="!pengajuanForm.get('atasanLangsung')?.value">{{ pengajuanForm.get('atasanLangsung')?.value || '-- Pilih Pejabat --' }}</span>
+              <mat-icon class="text-slate-500">expand_more</mat-icon>
+            </div>
+            @if (dropdownAtasanOpen()) {
+              <div class="fixed inset-0 z-40" (click)="dropdownAtasanOpen.set(false)"></div>
+              <div class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 flex flex-col">
+                <div class="p-2 border-b shrink-0">
+                  <input type="text" [value]="searchAtasan()" (input)="searchAtasan.set($any($event.target).value)" 
+                         class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500" 
+                         placeholder="Cari nama atau jabatan..." autofocus />
+                </div>
+                <div class="overflow-y-auto p-1 custom-scrollbar">
+                  @for (a of filteredAtasanList(); track a.id) {
+                    <div (click)="pengajuanForm.patchValue({ atasanLangsung: a.namaPegawai }); dropdownAtasanOpen.set(false)" class="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-lg text-sm flex flex-col">
+                      <span class="font-bold text-slate-800">{{ a.namaPegawai }}</span>
+                      <span class="text-[10px] text-slate-500">{{ a.jabatan }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          <div class="relative">
+            <label class="block text-xs font-bold uppercase text-slate-700 mb-1">Pejabat yang Menyetujui</label>
+            <div (click)="dropdownPejabatMenyetujuiOpen.set(!dropdownPejabatMenyetujuiOpen())" class="w-full px-4 py-2 rounded-xl border border-slate-300 text-sm bg-white cursor-pointer flex justify-between items-center outline-none focus:ring-2 focus:ring-blue-500">
+              <span [class.text-slate-400]="!pengajuanForm.get('pejabatMenyetujui')?.value">
+                @if (pengajuanForm.get('pejabatMenyetujui')?.value) {
+                  <span class="font-bold text-blue-900">{{ pengajuanForm.get('pejabatMenyetujui')?.value }}</span>
+                } @else {
+                  -- Pilih Pejabat --
+                }
+              </span>
+              <mat-icon class="text-slate-500">expand_more</mat-icon>
+            </div>
+            @if (dropdownPejabatMenyetujuiOpen()) {
+              <div class="fixed inset-0 z-40" (click)="dropdownPejabatMenyetujuiOpen.set(false)"></div>
+              <div class="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 flex flex-col">
+                <div class="p-2 border-b shrink-0">
+                  <input type="text" [value]="searchPejabatMenyetujui()" (input)="searchPejabatMenyetujui.set($any($event.target).value)" 
+                         class="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500" 
+                         placeholder="Cari nama atau jabatan..." autofocus />
+                </div>
+                <div class="overflow-y-auto p-1 custom-scrollbar">
+                  @for (a of filteredPejabatMenyetujuiList(); track a.id) {
+                    <div (click)="pengajuanForm.patchValue({ pejabatMenyetujui: a.namaPegawai }); dropdownPejabatMenyetujuiOpen.set(false)" class="px-3 py-2 hover:bg-blue-50 cursor-pointer rounded-lg text-sm flex flex-col">
+                      <span class="font-bold text-blue-900">{{ a.namaPegawai }}</span>
+                      <span class="text-[10px] text-slate-500">{{ a.jabatan }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-5 border-t">
+          <button type="button" (click)="closeModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold hover:bg-slate-100 cursor-pointer">Batal</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2">
+            <mat-icon>send</mat-icon>
+            <span>Ajukan Cuti Sekarang</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'view_pengajuan' && selectedPengajuan(); as sp) {
+  <!-- AKSI VIEW MODAL & APPROVAL / PERBAIKAN -->
+  <div class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 border border-slate-100 my-8">
+      <div class="flex justify-between items-start border-b pb-4 mb-6">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-bold">{{ sp.id }}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase"
+                  [ngClass]="{
+                    'bg-amber-100 text-amber-800': sp.status === 'Menunggu',
+                    'bg-emerald-100 text-emerald-800': sp.status === 'Disetujui',
+                    'bg-rose-100 text-rose-800': sp.status === 'Perbaikan'
+                  }">{{ sp.status }}</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mt-2 flex items-center gap-2"><mat-icon class="text-blue-500">verified_user</mat-icon> Verifikasi & Persetujuan Pengajuan Cuti</h3>
+        </div>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+
+      <div class="space-y-4 text-sm">
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border">
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">Nama Pegawai</p>
+            <p class="font-bold text-slate-800">{{ sp.namaPegawai }}</p>
+            <p class="text-xs font-mono text-slate-500">NIP: {{ sp.nip }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">Jenis & Pelaksanaan</p>
+            <p class="font-bold text-blue-600">{{ sp.jenisCuti }} ({{ sp.lamaCuti }} Hari)</p>
+            <p class="text-xs text-slate-600">{{ sp.tanggalMulai | date:'dd MMM yyyy' }} s.d. {{ sp.tanggalSelesai | date:'dd MMM yyyy' }}</p>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs text-slate-400 font-bold uppercase">Alasan Cuti</p>
+          <p class="bg-slate-100 p-3 rounded-xl text-slate-700 italic">"{{ sp.alasanCuti }}"</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">Alamat Selama Cuti</p>
+            <p class="text-slate-700">{{ sp.alamatSelamaCuti }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400 font-bold uppercase">No. Telp / HP</p>
+            <p class="font-mono font-semibold">{{ sp.telp }}</p>
+          </div>
+        </div>
+
+        @if (sp.dokumen) {
+          <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 flex justify-between items-center">
+            <span class="flex items-center gap-1 text-xs font-bold text-blue-800"><mat-icon class="text-[16px]">attach_file</mat-icon> Dokumen Lampiran: <a [href]="sp.dokumen" target="_blank" class="underline hover:text-blue-900">Download/View</a></span>
+            <span class="text-xs bg-white px-2 py-1 rounded shadow-sm text-blue-600 font-bold">PDF Ready</span>
+          </div>
+        }
+
+        @if (cuti.currentUser()?.role === 'Admin' || cuti.currentUser()?.role === 'Verifikator') {
+        <!-- FORM APPROVAL VERIFIKATOR / ADMIN -->
+        <form [formGroup]="verifForm" (ngSubmit)="onSaveVerifikasi()" class="pt-4 border-t space-y-4 bg-amber-50/40 p-5 rounded-2xl border border-amber-200/60 mt-4">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1">
+            <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">bolt</mat-icon>
+            <span>Tindakan Verifikator & Pejabat:</span>
+          </h4>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Keputusan Persetujuan</label>
+            <div class="flex space-x-3">
+              <label class="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border cursor-pointer hover:border-emerald-500 font-bold text-emerald-700">
+                <input type="radio" formControlName="status" value="Disetujui" class="text-emerald-600 focus:ring-emerald-500" />
+                <mat-icon class="text-[18px]">check</mat-icon>
+                <span>Setujui (Approve)</span>
+              </label>
+              <label class="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border cursor-pointer hover:border-rose-500 font-bold text-rose-700">
+                <input type="radio" formControlName="status" value="Perbaikan" class="text-rose-600 focus:ring-rose-500" />
+                <mat-icon class="text-[18px]">close</mat-icon>
+                <span>Kembalikan / Perbaikan</span>
+              </label>
+              <label class="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border cursor-pointer hover:border-amber-500 font-bold text-amber-700">
+                <input type="radio" formControlName="status" value="Menunggu" class="text-amber-600 focus:ring-amber-500" />
+                <mat-icon class="text-[18px]">hourglass_empty</mat-icon>
+                <span>Menunggu</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Catatan Verifikator / Pejabat</label>
+            <textarea formControlName="catatanVerifikator" rows="2" class="w-full px-4 py-2 rounded-xl border text-sm bg-white outline-none" placeholder="Berikan catatan persetujuan atau alasan perbaikan..."></textarea>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-2">
+            <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold bg-white flex items-center gap-1">
+              <mat-icon class="text-[18px]">close</mat-icon>
+              <span>Tutup</span>
+            </button>
+            <button type="submit" class="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md cursor-pointer flex items-center gap-2">
+              <mat-icon>save</mat-icon>
+              <span>Simpan Keputusan</span>
+            </button>
+          </div>
+        </form>
+        } @else {
+          <!-- View only for Operator if it has notes -->
+          @if (sp.catatanVerifikator) {
+            <div class="pt-4 border-t space-y-4 bg-slate-50 p-5 rounded-2xl border mt-4">
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1">
+                <mat-icon class="text-[16px] w-4 h-4 flex items-center justify-center">notes</mat-icon>
+                <span>Catatan Verifikator & Pejabat:</span>
+              </h4>
+              <p class="text-sm text-slate-700 whitespace-pre-line">{{ sp.catatanVerifikator }}</p>
+            </div>
+          }
+          <div class="flex justify-end space-x-3 pt-6">
+            <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold bg-white flex items-center gap-1">
+              <mat-icon class="text-[18px]">close</mat-icon>
+              <span>Tutup</span>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'cetak_surat' && selectedPengajuan(); as sc) {
+  @let peg = selectedPegawaiInfo();
+  @let isPPPK = peg?.status === 'PPPK' || peg?.status === 'CPPPK' || peg?.status === 'PPPK PW';
+
+  <!-- PDF VIEWER MODAL -->
+  <div class="fixed inset-0 z-50 bg-[#323639] flex flex-col print:static print:bg-transparent print:block print:p-0">
+    
+    <!-- Viewer Toolbar (Hidden when printing) -->
+    <div class="h-14 bg-[#323639] border-b border-black/30 flex items-center justify-between px-4 text-[#F1F3F4] text-[13px] print:hidden shrink-0 select-none">
+      <div class="flex items-center gap-3">
+        <button (click)="closeModal()" class="hover:bg-white/10 p-1.5 rounded flex items-center justify-center transition-colors" title="Back">
+          <mat-icon class="text-[20px] w-5 h-5 flex items-center justify-center">menu</mat-icon>
+        </button>
+        <span class="font-medium truncate max-w-[150px] md:max-w-[200px] cursor-default">Formulir Cuti - {{ sc.namaPegawai }}.pdf</span>
+      </div>
+      
+      <div class="hidden md:flex items-center gap-4 text-[#F1F3F4]">
+        <div class="flex items-center gap-2">
+          <span class="bg-[#202124] px-2 py-1 rounded text-center min-w-[36px]">1</span> / 1
+        </div>
+        <div class="w-[1px] h-4 bg-[#5F6368]"></div>
+        <div class="flex items-center gap-1">
+          <button class="hover:bg-white/10 p-1 rounded transition-colors"><mat-icon class="text-[18px] w-[18px] h-[18px]">remove</mat-icon></button>
+          <span class="bg-[#202124] px-2 py-1 rounded text-center w-14">100%</span>
+          <button class="hover:bg-white/10 p-1 rounded transition-colors"><mat-icon class="text-[18px] w-[18px] h-[18px]">add</mat-icon></button>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button (click)="printDocument()" class="hover:bg-white/10 p-2 rounded-full flex items-center justify-center transition-colors" title="Cetak Surat (Print)">
+          <mat-icon class="text-[20px] w-5 h-5">print</mat-icon>
+        </button>
+        <button (click)="printDocument()" class="hover:bg-white/10 p-2 rounded-full flex items-center justify-center transition-colors" title="Unduh (Download PDF)">
+          <mat-icon class="text-[20px] w-5 h-5">download</mat-icon>
+        </button>
+        <button class="hover:bg-white/10 p-2 rounded-full flex items-center justify-center transition-colors">
+          <mat-icon class="text-[20px] w-5 h-5">more_vert</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Viewer Body -->
+    <div class="flex-1 overflow-y-auto flex justify-center p-4 md:p-8 print:p-0 print:overflow-visible">
+      
+      <!-- F4 Paper Container -->
+      <div class="bg-white text-black shadow-2xl shrink-0 print:shadow-none print:w-full print:max-w-none print:m-0" 
+           style="width: 215.9mm; min-height: 330.2mm; padding: 10mm; font-family: 'Times New Roman', Times, serif;">
+        
+        <div class="text-[11px] flex justify-end print:text-[11px]">
+          <div class="w-[350px]">
+            @if (isPPPK) {
+              <p>LAMPIRAN II<br>PERATURAN BADAN KEPEGAWAIAN NEGARA<br>REPUBLIK INDONESIA<br>NOMOR 7 TAHUN 2022<br>TENTANG TATA CARA PEMBERIAN CUTI PEGAWAI PEMERINTAH DENGAN PERJANJIAN KERJA</p>
+            } @else {
+              <p>ANAK LAMPIRAN 1.b<br>PERATURAN BADAN KEPEGAWAIAN NEGARA<br>REPUBLIK INDONESIA<br>NOMOR 24 TAHUN 2017<br>TENTANG<br>TATA CARA PEMBERIAN CUTI PEGAWAI NEGERI SIPIL</p>
+            }
+          </div>
+        </div>
+
+        <div class="text-center font-bold text-[12px] my-2 print:text-[11px]">
+          @if (isPPPK) {
+            <p>Formulir Permintaan dan Pemberian Cuti Pegawai Pemerintah Dengan Perjanjian Kerja</p>
+          }
+        </div>
+
+        <div class="text-[11px] flex justify-end mb-2 print:text-[11px]">
+          <div class="w-[350px]">
+            <p>Demak, {{ sc.tanggalPengajuan | date:'dd MMMM yyyy' }}</p>
+            <br>
+            <p>Kepada<br>Yth. {{ sc.pejabatMenyetujui || 'Asisten Administrasi Umum Sekda' }}<br>di.<br>Demak</p>
+          </div>
+        </div>
+
+        <div class="text-center font-bold text-[12px] mb-2 print:text-[11px]">
+          <p class="underline">FORMULIR PERMINTAAN DAN PEMBERIAN CUTI</p>
+        </div>
+
+        <!-- Table I. DATA PEGAWAI -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td colspan="4" class="border border-black px-2 py-1 font-bold">I. DATA PEGAWAI</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1 w-[15%]">Nama</td>
+            <td class="border border-black px-2 py-1 w-[45%]">{{ sc.namaPegawai }}</td>
+            <td class="border border-black px-2 py-1 w-[15%]">{{ isPPPK ? 'NI PPPK' : 'NIP' }}</td>
+            <td class="border border-black px-2 py-1 w-[25%]">{{ sc.nip }}</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1">Jabatan</td>
+            <td class="border border-black px-2 py-1">{{ peg?.jabatan || '-' }}</td>
+            <td class="border border-black px-2 py-1">Masa Kerja</td>
+            <td class="border border-black px-2 py-1">{{ peg?.masaKerja || '-' }}</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1">Unit Kerja</td>
+            <td colspan="3" class="border border-black px-2 py-1">{{ peg?.unitKerja || cuti.pengaturan().namaInstansi }}</td>
+          </tr>
+        </table>
+
+        <!-- Table II. JENIS CUTI -->
+        @if (isPPPK) {
+          <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+            <tr>
+              <td colspan="2" class="border border-black px-2 py-1 font-bold">II. JENIS CUTI YANG DIAMBIL</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 w-[80%]">Cuti Tahunan</td>
+              <td class="border border-black px-2 py-1 text-center w-[20%] font-bold">{{ sc.kodeCuti === 'CT' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">Cuti Sakit</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CS' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">Cuti Melahirkan</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CM' ? '✔' : '-' }}</td>
+            </tr>
+          </table>
+        } @else {
+          <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+            <tr>
+              <td colspan="4" class="border border-black px-2 py-1 font-bold">II. JENIS CUTI YANG DIAMBIL **</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 w-[35%]">1. Cuti Tahunan</td>
+              <td class="border border-black px-2 py-1 text-center w-[15%] font-bold">{{ sc.kodeCuti === 'CT' ? '✔' : '-' }}</td>
+              <td class="border border-black px-2 py-1 w-[35%]">2. Cuti Besar</td>
+              <td class="border border-black px-2 py-1 text-center w-[15%] font-bold">{{ sc.kodeCuti === 'CB' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">3. Cuti Sakit</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CS' ? '✔' : '-' }}</td>
+              <td class="border border-black px-2 py-1">4. Cuti Melahirkan</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CM' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">5. Cuti Karena Alasan Penting</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CAP' ? '✔' : '-' }}</td>
+              <td class="border border-black px-2 py-1">6. Cuti di Luar Tanggungan Negara</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CLTN' ? '✔' : '-' }}</td>
+            </tr>
+          </table>
+        }
+
+        <!-- Table III. ALASAN CUTI -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td class="border border-black px-2 py-1 font-bold">III. ALASAN CUTI</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1">{{ sc.alasanCuti }}</td>
+          </tr>
+        </table>
+
+        <!-- Table IV. LAMANYA CUTI -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td colspan="4" class="border border-black px-2 py-1 font-bold">IV. LAMANYA CUTI</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1 w-[15%]">Selama</td>
+            <td class="border border-black px-2 py-1 w-[35%]">{{ sc.lamaCuti }} (hari/bulan/tahun)*</td>
+            <td class="border border-black px-2 py-1 w-[20%]">Mulai Tanggal</td>
+            <td class="border border-black px-2 py-1 w-[30%]">{{ sc.tanggalMulai | date:'dd-MM-yyyy' }} <span class="mx-2">s/d</span> {{ sc.tanggalSelesai | date:'dd-MM-yyyy' }}</td>
+          </tr>
+        </table>
+
+        <!-- Table V. CATATAN CUTI -->
+        @if (isPPPK) {
+          <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+            <tr>
+              <td colspan="2" class="border border-black px-2 py-1 font-bold">V. CATATAN CUTI ***</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 w-[80%]">1. Cuti Tahunan</td>
+              <td class="border border-black px-2 py-1 text-center w-[20%] font-bold">{{ sc.kodeCuti === 'CT' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">2. Cuti Sakit</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CS' ? '✔' : '-' }}</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1">3. Cuti Karena Alasan Penting</td>
+              <td class="border border-black px-2 py-1 text-center font-bold">{{ sc.kodeCuti === 'CAP' ? '✔' : '-' }}</td>
+            </tr>
+          </table>
+        } @else {
+          <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+            <tr>
+              <td colspan="5" class="border border-black px-2 py-1 font-bold">V. CATATAN CUTI ***</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="border border-black px-2 py-1 w-[50%]">1. CUTI TAHUNAN</td>
+              <td class="border border-black px-2 py-1 w-[40%]">2. CUTI BESAR</td>
+              <td class="border border-black px-2 py-1 text-center w-[10%]">-</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 text-center">Tahun</td>
+              <td class="border border-black px-2 py-1 text-center">Sisa</td>
+              <td class="border border-black px-2 py-1 text-center">Keterangan</td>
+              <td class="border border-black px-2 py-1">3. CUTI SAKIT</td>
+              <td class="border border-black px-2 py-1 text-center">-</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 text-center">N - 2</td>
+              <td class="border border-black px-2 py-1 text-center">{{ sc.sisaN2 }}</td>
+              <td class="border border-black border-b-0 px-2 py-1"></td>
+              <td class="border border-black px-2 py-1">4. CUTI MELAHIRKAN</td>
+              <td class="border border-black px-2 py-1 text-center">-</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 text-center">N - 1</td>
+              <td class="border border-black px-2 py-1 text-center">{{ sc.sisaN1 }}</td>
+              <td class="border border-black border-b-0 px-2 py-1"></td>
+              <td class="border border-black px-2 py-1">5. CUTI KARENA ALASAN PENTING</td>
+              <td class="border border-black px-2 py-1 text-center">-</td>
+            </tr>
+            <tr>
+              <td class="border border-black px-2 py-1 text-center">N</td>
+              <td class="border border-black px-2 py-1 text-center">{{ sc.sisaN }}</td>
+              <td class="border border-black border-b-0 px-2 py-1"></td>
+              <td class="border border-black px-2 py-1">6. CUTI DI LUAR TANGGUNGAN NEGARA</td>
+              <td class="border border-black px-2 py-1 text-center">-</td>
+            </tr>
+          </table>
+        }
+
+        <!-- Table VI. ALAMAT -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td colspan="3" class="border border-black px-2 py-1 font-bold">VI. ALAMAT SELAMA MENJALANKAN CUTI ***</td>
+          </tr>
+          <tr>
+            <td class="border border-black border-t-0 border-b-0 px-2 py-1 align-top w-[45%]"></td>
+            <td class="border border-black border-b-0 px-2 py-1 text-center w-[15%]">TELP</td>
+            <td class="border border-black border-t-0 border-b-0 px-2 py-1 align-top w-[40%]"></td>
+          </tr>
+          <tr>
+            <td class="border border-black border-t-0 px-2 py-1 align-top">{{ sc.alamatSelamaCuti }}</td>
+            <td class="border border-black border-t-0 px-2 py-1 text-center align-top">{{ sc.telp }}</td>
+            <td class="border border-black border-t-0 px-2 py-2 text-center align-top">
+              <div class="flex flex-col items-center justify-between h-full pt-1 min-h-[80px]">
+                <span>Hormat Saya,</span>
+                <div class="mt-8 text-center">
+                  <span class="underline block">({{ sc.namaPegawai }})</span>
+                  <span>{{ isPPPK ? 'NI PPPK' : 'NIP' }} {{ sc.nip }}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Table VII. PERTIMBANGAN ATASAN LANGSUNG -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td colspan="4" class="border border-black px-2 py-1 font-bold">VII. PERTIMBANGAN ATASAN LANGSUNG {{ isPPPK ? '**' : '' }}</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1 text-center w-[15%]">DISETUJUI</td>
+            <td class="border border-black px-2 py-1 text-center w-[20%]">PERUBAHAN</td>
+            <td class="border border-black px-2 py-1 text-center w-[25%]">DITANGGUHKAN</td>
+            <td class="border border-black px-2 py-1 text-center w-[40%]">TIDAK DISETUJUI</td>
+          </tr>
+          <tr>
+            <td class="border border-black border-b-0 px-2 py-1 h-6"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+          </tr>
+          <tr>
+            <td colspan="3" class="border border-black border-t-0 border-l-0 border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-t-0 px-2 py-2 text-center align-top h-20">
+              <div class="flex flex-col items-center justify-between h-full pt-1">
+                <span>Atasan Langsung,</span>
+                <div class="mt-8 text-center">
+                  <span class="underline block">({{ sc.atasanLangsung }})</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Table VIII. KEPUTUSAN PEJABAT YANG BERWENANG -->
+        <table class="w-full border-collapse border border-black text-[11px] mb-2 print:text-[11px] print:mb-1">
+          <tr>
+            <td colspan="4" class="border border-black px-2 py-1 font-bold">VIII. KEPUTUSAN PEJABAT YANG BERWENANG MEMBERIKAN CUTI ** ***</td>
+          </tr>
+          <tr>
+            <td class="border border-black px-2 py-1 text-center w-[15%]">DISETUJUI</td>
+            <td class="border border-black px-2 py-1 text-center w-[20%]">PERUBAHAN ****</td>
+            <td class="border border-black px-2 py-1 text-center w-[25%]">DITANGGUHKAN ****</td>
+            <td class="border border-black px-2 py-1 text-center w-[40%]">TIDAK DISETUJUI ****</td>
+          </tr>
+          <tr>
+            <td class="border border-black border-b-0 px-2 py-1 h-6"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-b-0 px-2 py-1"></td>
+          </tr>
+          <tr>
+            <td colspan="3" class="border border-black border-t-0 border-l-0 border-b-0 px-2 py-1"></td>
+            <td class="border border-black border-t-0 px-2 py-2 text-center align-top h-20">
+              <div class="flex flex-col items-center justify-between h-full pt-1">
+                <span>Pejabat Yang Memberikan Izin,</span>
+                <div class="mt-8 text-center">
+                  <span class="underline block">({{ sc.pejabatMenyetujui || 'Asisten Administrasi Umum Sekda' }})</span>
+                  @if (!isPPPK) {
+                    <span>NIP {{ cuti.pengaturan().nipKepalaOpd }}</span>
+                  }
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        @if (!isPPPK) {
+          <div class="text-[10px] leading-tight print:text-[11px] mt-1">
+            <p>Keterangan:</p>
+            <p>* Silakan pilih salah satu atau lebih jenis cuti yang sesuai.</p>
+            <p>** Silakan isi dengan jenis cuti yang diambil.</p>
+            <p>*** Silakan isi dengan catatan cuti yang relevan.</p>
+            <p>**** Silakan isi dengan keterangan tambahan jika diperlukan.</p>
+            <p>N = Tahun berjalan</p>
+            <p>N - 1 = Tahun sebelum tahun berjalan</p>
+            <p>N - 2 = Tahun sebelum tahun berjalan</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+}
+
+@if (activeModal() === 'user') {
+  <div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-100">
+      <div class="flex justify-between items-center border-b pb-4 mb-4">
+        <h3 class="text-lg font-bold text-slate-800">Kelola Data User</h3>
+        <button (click)="closeModal()" class="text-slate-400 hover:text-slate-700 flex items-center justify-center"><mat-icon>close</mat-icon></button>
+      </div>
+      <form [formGroup]="userForm" (ngSubmit)="onSaveUser()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Username Login</label>
+          <input type="text" formControlName="username" class="w-full px-4 py-2 rounded-xl border text-sm font-mono" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+          <input type="text" formControlName="password" class="w-full px-4 py-2 rounded-xl border text-sm font-mono" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nama User</label>
+          <input type="text" formControlName="nama" class="w-full px-4 py-2 rounded-xl border text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Role Hak Akses</label>
+          <select formControlName="role" class="w-full px-4 py-2 rounded-xl border text-sm bg-white font-bold">
+            <option value="Admin">Admin</option>
+            <option value="Verifikator">Verifikator</option>
+            <option value="Operator">Operator</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">NIP Terkait (Opsional)</label>
+          <input type="text" formControlName="nip" class="w-full px-4 py-2 rounded-xl border text-sm font-mono" />
+        </div>
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button" (click)="closeModal()" class="px-4 py-2 rounded-xl border text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold">Simpan User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+@if (activeModal() === 'confirm_delete' && deleteTarget(); as dt) {
+  <div class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-rose-100">
+      <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+        <mat-icon class="text-amber-500 mr-2 text-[20px]">warning</mat-icon>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900">Konfirmasi Hapus Data</h3>
+      <p class="text-xs text-slate-500 mt-2">Apakah Anda yakin ingin menghapus data <span class="font-bold text-slate-800">"{{ dt.title }}"</span>? Data yang dihapus tidak dapat dikembalikan.</p>
+
+      <div class="flex space-x-3 mt-6">
+        <button type="button" (click)="closeModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all">
+          Batal
+        </button>
+        <button type="button" (click)="executeDelete()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 active:scale-98 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+          Ya, Hapus Data
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
